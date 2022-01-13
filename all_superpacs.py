@@ -31,16 +31,18 @@ response = requests.get(base_url + operation, params = api_parameters)
 print('Response Code: {0}\n'.format(response.status_code))
 data = json.loads(response.text)
 
-# Create empty list for json results
-container = []
+# Put first pull in json file, overwrite existing
+with open('fec_api_results.json', 'w') as outfile:
+    json.dump(data, outfile)
 
-# Put each dictionary in first page into data as separate element
-for i in data:
-	container.append({i:data[i]})
+# loop through results and print name
+for committee in data['results']:
+    print(committee['name'])
+
 
 ## Get all data
 
-last_page = 2#data['pagination']['pages']
+last_page = data['pagination']['pages']
 current_page = data['pagination']['page']
 
 while last_page != current_page:	
@@ -54,24 +56,14 @@ while last_page != current_page:
 	# ping api
 	response = requests.get(base_url + operation, params = api_parameters)
 
-	# print status code and load returned data into json - need to figure out how to append, not overwrite data each time
+	# print status code and load returned data into json
 	print('Response Code: {0}\n'.format(response.status_code))
 	data = json.loads(response.text)
 
-	# Put each dictionary in new page into data list as separate element
-	for i in data:
-		container.append({i:data[i]})
+	# save raw data, append
+	with open('fec_api_results.json', 'a') as outfile:
+	    json.dump(data, outfile)
 
-
-#print(container)
-
-## Last step - save container file into json file
-
-# save raw data
-with open('fec_api_results.json', 'w') as outfile:
-    json.dump(data, outfile)
-
-
-# loop through results and print name
-for committee in data['results']:
-    print(committee['name'])
+	# loop through results and print name
+	for committee in data['results']:
+	    print(committee['name'])
